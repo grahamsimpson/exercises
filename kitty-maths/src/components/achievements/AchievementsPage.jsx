@@ -1,7 +1,10 @@
+import { useRef, useState } from 'react'
 import useStore from '../../store/useStore'
 
 export default function AchievementsPage() {
-  const { earnedBadges, BADGE_DEFINITIONS, kittyXP, level, levelTitle, streakDays } = useStore()
+  const { earnedBadges, BADGE_DEFINITIONS, kittyXP, level, levelTitle, streakDays, exportProgress, importProgress } = useStore()
+  const fileInputRef = useRef(null)
+  const [importStatus, setImportStatus] = useState(null)
 
   const earned = earnedBadges.length
   const total = BADGE_DEFINITIONS.length
@@ -63,6 +66,46 @@ export default function AchievementsPage() {
 
       {/* Badge descriptions on hover hint */}
       <p className="text-center text-gray-400 text-xs mt-4">Keep practising to unlock more badges!</p>
+
+      {/* Save / Load progress */}
+      <div className="card mt-6 p-4">
+        <h2 className="text-sm font-bold text-gray-700 mb-1">Transfer Progress</h2>
+        <p className="text-xs text-gray-400 mb-3">Save your progress to a file, then load it on another device (e.g. school Chromebook).</p>
+        <div className="flex gap-3">
+          <button
+            onClick={exportProgress}
+            className="flex-1 bg-kitty-pink text-white text-sm font-bold py-2 rounded-xl hover:opacity-90 active:scale-95 transition-all"
+          >
+            💾 Save Progress
+          </button>
+          <button
+            onClick={() => fileInputRef.current.click()}
+            className="flex-1 bg-kitty-hot text-white text-sm font-bold py-2 rounded-xl hover:opacity-90 active:scale-95 transition-all"
+          >
+            📂 Load Progress
+          </button>
+        </div>
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept=".json"
+          className="hidden"
+          onChange={async (e) => {
+            const file = e.target.files[0]
+            if (!file) return
+            try {
+              await importProgress(file)
+              setImportStatus('success')
+            } catch {
+              setImportStatus('error')
+            }
+            e.target.value = ''
+            setTimeout(() => setImportStatus(null), 3000)
+          }}
+        />
+        {importStatus === 'success' && <p className="text-green-600 text-xs text-center mt-2 font-bold">Progress loaded successfully!</p>}
+        {importStatus === 'error' && <p className="text-red-500 text-xs text-center mt-2 font-bold">Oops! That file didn't work. Try again.</p>}
+      </div>
     </div>
   )
 }

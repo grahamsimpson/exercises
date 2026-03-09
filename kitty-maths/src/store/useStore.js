@@ -136,6 +136,35 @@ const useStore = create(
         return dailyChallengeDate !== new Date().toDateString()
       },
 
+      exportProgress: () => {
+        const { kittyXP, level, levelTitle, streakDays, lastPlayedDate, topicProgress, earnedBadges, dailyChallengeDate, dailyChallengeCompleted } = get()
+        const data = JSON.stringify({ kittyXP, level, levelTitle, streakDays, lastPlayedDate, topicProgress, earnedBadges, dailyChallengeDate, dailyChallengeCompleted, exportedAt: new Date().toISOString() }, null, 2)
+        const blob = new Blob([data], { type: 'application/json' })
+        const url = URL.createObjectURL(blob)
+        const a = document.createElement('a')
+        a.href = url
+        a.download = 'kitty-maths-progress.json'
+        a.click()
+        URL.revokeObjectURL(url)
+      },
+
+      importProgress: (file) => {
+        return new Promise((resolve, reject) => {
+          const reader = new FileReader()
+          reader.onload = (e) => {
+            try {
+              const data = JSON.parse(e.target.result)
+              const { kittyXP, level, levelTitle, streakDays, lastPlayedDate, topicProgress, earnedBadges, dailyChallengeDate, dailyChallengeCompleted } = data
+              set({ kittyXP, level, levelTitle, streakDays, lastPlayedDate, topicProgress, earnedBadges, dailyChallengeDate, dailyChallengeCompleted })
+              resolve()
+            } catch {
+              reject(new Error('Invalid progress file'))
+            }
+          }
+          reader.readAsText(file)
+        })
+      },
+
       BADGE_DEFINITIONS,
       LEVEL_THRESHOLDS,
       LEVEL_TITLES,
