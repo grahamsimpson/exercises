@@ -54,6 +54,7 @@ const useStore = create(
       earnedBadges: [],
       dailyChallengeDate: null,
       dailyChallengeCompleted: false,
+      seenQuestions: {},
 
       addXP: (amount) => {
         set((s) => {
@@ -136,9 +137,28 @@ const useStore = create(
         return dailyChallengeDate !== new Date().toDateString()
       },
 
+      selectFreshQuestions: (topic, count) => {
+        const { seenQuestions } = get()
+        const seen = seenQuestions[topic.id] || []
+        const all = [...topic.questions]
+        const unseen = all.filter(q => !seen.includes(q.id))
+        const pool = unseen.length >= count ? unseen : [...unseen, ...all.filter(q => seen.includes(q.id))]
+        // Shuffle pool
+        for (let i = pool.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [pool[i], pool[j]] = [pool[j], pool[i]]
+        }
+        const selected = pool.slice(0, Math.min(count, pool.length))
+        // Mark selected as seen, keep only last 2x count to allow cycling back
+        const newSeen = [...seen, ...selected.map(q => q.id)]
+        const maxRemember = topic.questions.length
+        set(s => ({ seenQuestions: { ...s.seenQuestions, [topic.id]: newSeen.slice(-maxRemember) } }))
+        return selected
+      },
+
       exportProgress: () => {
-        const { kittyXP, level, levelTitle, streakDays, lastPlayedDate, topicProgress, earnedBadges, dailyChallengeDate, dailyChallengeCompleted } = get()
-        const data = JSON.stringify({ kittyXP, level, levelTitle, streakDays, lastPlayedDate, topicProgress, earnedBadges, dailyChallengeDate, dailyChallengeCompleted, exportedAt: new Date().toISOString() }, null, 2)
+        const { kittyXP, level, levelTitle, streakDays, lastPlayedDate, topicProgress, earnedBadges, dailyChallengeDate, dailyChallengeCompleted, seenQuestions } = get()
+        const data = JSON.stringify({ kittyXP, level, levelTitle, streakDays, lastPlayedDate, topicProgress, earnedBadges, dailyChallengeDate, dailyChallengeCompleted, seenQuestions, exportedAt: new Date().toISOString() }, null, 2)
         const blob = new Blob([data], { type: 'application/json' })
         const url = URL.createObjectURL(blob)
         const a = document.createElement('a')
@@ -154,8 +174,8 @@ const useStore = create(
           reader.onload = (e) => {
             try {
               const data = JSON.parse(e.target.result)
-              const { kittyXP, level, levelTitle, streakDays, lastPlayedDate, topicProgress, earnedBadges, dailyChallengeDate, dailyChallengeCompleted } = data
-              set({ kittyXP, level, levelTitle, streakDays, lastPlayedDate, topicProgress, earnedBadges, dailyChallengeDate, dailyChallengeCompleted })
+              const { kittyXP, level, levelTitle, streakDays, lastPlayedDate, topicProgress, earnedBadges, dailyChallengeDate, dailyChallengeCompleted, seenQuestions } = data
+              set({ kittyXP, level, levelTitle, streakDays, lastPlayedDate, topicProgress, earnedBadges, dailyChallengeDate, dailyChallengeCompleted, seenQuestions: seenQuestions || {} })
               resolve()
             } catch {
               reject(new Error('Invalid progress file'))

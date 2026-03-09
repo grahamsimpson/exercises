@@ -1,5 +1,4 @@
 import { useState, useEffect, useCallback } from 'react'
-import { selectQuestions } from '../../data/topics'
 import useStore from '../../store/useStore'
 
 const QUIZ_SIZE = 10
@@ -9,9 +8,9 @@ function normalise(s) {
 }
 
 export default function QuizPage({ topic, navigate }) {
-  const { addXP, markFirstAnswer, markFirstCorrect, updateTopicProgress } = useStore()
+  const { addXP, markFirstAnswer, markFirstCorrect, updateTopicProgress, selectFreshQuestions } = useStore()
 
-  const [questions] = useState(() => selectQuestions(topic, QUIZ_SIZE))
+  const [questions] = useState(() => selectFreshQuestions(topic, QUIZ_SIZE))
   const [qIndex, setQIndex] = useState(0)
   const [inputVal, setInputVal] = useState('')
   const [selectedOption, setSelectedOption] = useState(null)
