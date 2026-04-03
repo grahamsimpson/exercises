@@ -1,0 +1,31 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    margin: 0;
+    background-color: #FFF0F5;
+    font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+    min-height: 100vh;
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+}
+
+@layer components {
+  .btn-pink {
+    @apply bg-kitty-pink hover:bg-kitty-hot text-white font-bold py-3 px-6 rounded-2xl shadow-md transition-all duration-200 active:scale-95 cursor-pointer border-none;
+  }
+  .btn-outline {
+    @apply border-2 border-kitty-pink text-kitty-hot hover:bg-kitty-light font-bold py-3 px-6 rounded-2xl transition-all duration-200 active:scale-95 cursor-pointer bg-transparent;
+  }
+  .card {
+    @apply bg-white rounded-3xl shadow-md p-5;
+  }
+  .topic-card {
+    @apply bg-white rounded-3xl shadow-md p-5 cursor-pointer hover:shadow-xl transition-all duration-200 border-2 border-transparent hover:border-kitty-pink;
+  }
+}
